@@ -1174,6 +1174,8 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "futures 0.1.29",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]

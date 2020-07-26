@@ -1,5 +1,6 @@
 use actix_web::{App, client::Client, Error, HttpResponse, HttpServer, web};
-use futures::Future;
+// use futures::Future;
+use serde_derive::Deserialize;
 
 async fn index() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().content_type("text/plain").body("Hello World!"))
@@ -31,12 +32,15 @@ async fn index() -> Result<HttpResponse, Error> {
 //     response
 // }
 
-async fn get_wiki_resources_async() -> Result<HttpResponse, Error> {
+#[derive(Deserialize)]
+pub struct Info {
+    name: String,
+}
+
+async fn get_wiki_resources_async(info: web::Query<Info>) -> Result<HttpResponse, Error> {
     let client = Client::new();
-    let name = "Scala";
-    let url = "http://wikipedia.simpleapi.net/api?keyword=name&output=json".replace("name", name);
-    // let url = &"http://wikipedia.simpleapi.net/api?keyword=name&output=json".replace("name", name);
-    // let url = format!("{}{}{}", "http://wikipedia.simpleapi.net/api?keyword=", name, "&output=json");
+    let url = "http://wikipedia.simpleapi.net/api?keyword=name&output=json".replace("name", &info.name);
+    // let url = format!("{}{}{}", "http://wikipedia.simpleapi.net/api?keyword=", &info.name, "&output=json");
 
     let mut res = client
         .get(url)
