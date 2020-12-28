@@ -39,6 +39,21 @@ pub struct Info {
 
 async fn get_wiki_resources_async(info: web::Query<Info>) -> Result<HttpResponse, Error> {
     let client = Client::new();
+    let url = "https://en.wikipedia.org/w/api.php?titles=name&format=json&action=query&prop=revisions&rvprop=content".replace("name", &info.name);
+
+    let mut res = client
+        .get(url)
+        .header("User-Agent", "Actix-web")
+        .send()
+        .await.map_err(Error::from)?;
+    let mut client_res = HttpResponse::build(res.status());
+    let body = res.body().limit(usize::max_value()).await?;
+
+    Ok(client_res.content_type("application/json").body(body).await?)
+}
+
+async fn get_ja_wiki_resources_async(info: web::Query<Info>) -> Result<HttpResponse, Error> {
+    let client = Client::new();
     let url = "http://wikipedia.simpleapi.net/api?keyword=name&output=json".replace("name", &info.name);
     // let url = format!("{}{}{}", "http://wikipedia.simpleapi.net/api?keyword=", &info.name, "&output=json");
 
@@ -75,11 +90,10 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/app")
                     .service(web::resource("/").to(index))
                     .service(web::resource("/wiki").route(web::get().to(get_wiki_resources_async)))
+                    .service(web::resource("/ja/wiki").route(web::get().to(get_ja_wiki_resources_async)))
             )
     }).bind("localhost:3000")
         .unwrap()
         .run()
         .await
 }
-
-
